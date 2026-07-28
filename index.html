@@ -529,8 +529,6 @@
   #page-record .goal-header { font-size:13px; }
   #page-record .goal-detail { font-size:11px; margin-top:6px; }
   #page-record .goal-section .btn { margin-top:8px !important; padding:6px 12px; font-size:12px; }
-  #page-record .entry-row { display:flex; gap:10px; }
-  #page-record .entry-row .form-group { flex:1; margin-bottom:8px; }
   #page-record .form-group { margin-bottom:8px; }
   #page-record .form-label { font-size:12px; margin-bottom:4px; }
   #page-record .form-input { padding:8px 10px; font-size:14px; border-radius:12px; }
@@ -616,27 +614,26 @@
   <div class="card">
     <div class="card-title">✏️ 记录体重</div>
     <form id="entryForm" onsubmit="addEntry(event)">
-      <div class="entry-row">
-        <div class="form-group">
-          <label class="form-label">日期</label>
-          <input type="date" class="form-input" id="entryDate" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">体重</label>
-          <div class="input-with-suffix">
-            <input type="number" class="form-input" id="entryWeight" step="0.1" min="50" max="500" placeholder="140.5" required>
-            <span class="suffix">斤</span>
-          </div>
+      <div class="form-group">
+        <label class="form-label">日期</label>
+        <input type="date" class="form-input" id="entryDate" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">体重</label>
+        <div class="input-with-suffix">
+          <input type="number" class="form-input" id="entryWeight" step="0.1" min="50" max="500" placeholder="例如：140.5" required>
+          <span class="suffix">斤</span>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">备注（可选）</label>
-        <input type="text" class="form-input" id="entryNote" placeholder="晨起空腹、运动后…" maxlength="50">
+        <input type="text" class="form-input" id="entryNote" placeholder="例：晨起空腹、运动后..." maxlength="50">
       </div>
       <button type="submit" class="btn btn-primary btn-full">💾 保存记录</button>
     </form>
     <div class="tip-box">
-      💡 每天固定时间称重更准；定期点「💾 备份」到微信/微云，换手机用「📥 导入」恢复。
+      💡 <b>小贴士：</b>建议每天固定时间（如晨起空腹）称重，数据更可比。体重波动正常，关注长期趋势就好～<br>
+      🔐 <b>数据保护：</b>定期点「💾 备份」存一份到微信/微云/iCloud，换手机或链接失效时用「📥 导入」恢复。
     </div>
   </div>
 
