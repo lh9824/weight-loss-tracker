@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>减肥记录工作台 · 少女风</title>
+<script src="./chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: linear-gradient(135deg, #fdeef6 0%, #eafaf1 55%, #f3f0fb 100%);
+    --card-bg: #fffdfe;
+    --primary: #5fc99a;
+    --primary-dark: #3fae7d;
+    --primary-light: #d6f3e7;
+    --accent: #ff8fb8;
+    --accent-light: #ffe1ec;
+    --accent2: #ffd36e;
+    --danger: #ff7a7a;
+    --warning: #ffb74d;
+    --text: #5b5566;
+    --text-secondary: #a59bb2;
+    --border: #f3dce8;
+    --pink: #ff8fb8;
+    --green: #5fc99a;
+    --shadow: 0 8px 22px rgba(255,143,184,0.16), 0 3px 8px rgba(95,201,154,0.10);
+    --shadow-lg: 0 16px 40px rgba(255,143,184,0.22), 0 6px 16px rgba(95,201,154,0.12);
+    --radius: 22px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Decorative background layer: sparkles + soft blobs */
+  .bg-decor {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      radial-gradient(circle, rgba(255,143,184,0.20) 2px, transparent 3px),
+      radial-gradient(circle, rgba(95,201,154,0.18) 2px, transparent 3px);
+    background-size: 88px 88px, 124px 124px;
+    background-position: 0 0, 44px 60px;
+  }
+  .bg-blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(46px);
+    opacity: 0.5;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .bg-blob.pink { width: 280px; height: 280px; background: #ffc6e0; top: -60px; left: -70px; }
+  .bg-blob.green { width: 320px; height: 320px; background: #b8ecd6; bottom: -90px; right: -80px; }
+  .float-heart {
+    position: fixed;
+    z-index: -1;
+    pointer-events: none;
+    font-size: 22px;
+    opacity: 0.55;
+    animation: floatH 6s ease-in-out infinite;
+  }
+  @keyframes floatH {
+    0%,100% { transform: translateY(0) rotate(-6deg); }
+    50% { transform: translateY(-16px) rotate(6deg); }
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; position: relative; }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+    gap: 14px;
+    position: relative;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .header-left h1 {
+    font-size: 27px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(92deg, #4fbf8e 0%, #ff8fb8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 2px 10px rgba(255,143,184,0.15);
+  }
+  .header-left h1 .emoji { font-size: 30px; -webkit-text-fill-color: initial; }
+  .header-left p {
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+  .header-right {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #5fc99a 0%, #ff8fb8 100%);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(255,143,184,0.32);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(255,143,184,0.42); }
+  .btn-ghost {
+    background: #fffdfe;
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1.5px solid #ffd6d6;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  .btn-danger:hover { background: #fff0f0; border-color: var(--danger); }
+
+  /* Brand mascot avatar */
+  .brand-avatar {
+    width: 84px; height: 84px; border-radius: 24px;
+    background: var(--accent-light); display: flex; align-items: center; justify-content: center;
+    overflow: hidden; border: 2.5px solid #ffd1e6; flex-shrink: 0;
+    box-shadow: 0 6px 16px rgba(255,143,184,0.25);
+  }
+  .brand-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #fff0f6;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .stat-card.c1::before { background: linear-gradient(90deg,#5fc99a,#8fe0c0); }
+  .stat-card.c2::before { background: linear-gradient(90deg,#ff8fb8,#ffb3d1); }
+  .stat-card.c3::before { background: linear-gradient(90deg,#ffd36e,#ffe09a); }
+  .stat-card.c4::before { background: linear-gradient(90deg,#a78bfa,#c4b5fd); }
+  .stat-card.c5::before { background: linear-gradient(90deg,#7ed0e8,#a8e6f0); }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(120deg,#4fbf8e,#ff8fb8);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .stat-value .unit { font-size: 14px; font-weight: 600; color: var(--text-secondary); -webkit-text-fill-color: var(--text-secondary); margin-left: 2px; }
+  .stat-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .stat-trend-down { color: var(--primary-dark); font-weight: 700; }
+  .stat-trend-up { color: var(--danger); font-weight: 700; }
+
+  /* Main Layout */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 768px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    border: 1px solid #fff0f6;
+    position: relative;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #6a6276;
+  }
+
+  /* Chart */
+  .chart-wrapper {
+    position: relative;
+    height: 300px;
+  }
+
+  /* Form */
+  .form-group { margin-bottom: 14px; }
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.8px solid var(--border);
+    border-radius: 14px;
+    font-size: 15px;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fffdfe;
+    color: var(--text);
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-light);
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .input-with-suffix {
+    position: relative;
+  }
+  .input-with-suffix .suffix {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 700;
+    pointer-events: none;
+  }
+  .input-with-suffix .form-input { padding-right: 38px; }
+
+  .btn-full { width: 100%; justify-content: center; padding: 13px; font-size: 15px; }
+
+  /* Goal Progress */
+  .goal-section {
+    background: linear-gradient(135deg, var(--accent-light), var(--primary-light));
+    border-radius: 18px;
+    padding: 18px;
+    margin-top: 16px;
+  }
+  .goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .goal-header span:first-child { font-size: 13px; font-weight: 700; color: #7a6a82; }
+  .goal-header span:last-child { font-size: 16px; font-weight: 800; color: var(--primary-dark); }
+  .progress-bar {
+    height: 12px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 999px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff8fb8, #5fc99a);
+    border-radius: 999px;
+    transition: width 0.5s ease;
+  }
+  .goal-detail {
+    font-size: 12px;
+    color: #7a6a82;
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
+  /* History Table */
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .history-table th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--border);
+    letter-spacing: 0.5px;
+  }
+  .history-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f7eef4;
+    font-size: 14px;
+  }
+  .history-table tr:last-child td { border-bottom: none; }
+  .history-table tbody tr { transition: background 0.15s; }
+  .history-table tbody tr:hover { background: var(--accent-light); }
+  .weight-change {
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 6px;
+  }
+  .weight-badge {
+    font-weight: 800;
+    font-size: 15px;
+    color: #6a6276;
+  }
+  .note-text {
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-style: italic;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.6; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(123,106,130,0.36);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--card-bg);
+    border-radius: 26px;
+    padding: 26px;
+    width: 90%;
+    max-width: 440px;
+    box-shadow: var(--shadow-lg);
+    animation: modalIn 0.25s ease;
+    border: 1px solid #fff0f6;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.94) translateY(12px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal h3 {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 18px;
+    color: #6a6276;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .modal-actions .btn { flex: 1; justify-content: center; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: linear-gradient(135deg,#5fc99a,#ff8fb8);
+    color: #fff;
+    padding: 12px 26px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: var(--shadow-lg);
+    z-index: 2000;
+    transition: transform 0.3s ease;
+    opacity: 0;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { background: linear-gradient(135deg,#5fc99a,#7fd9b4); }
+  .toast.error { background: linear-gradient(135deg,#ff7a7a,#ff9ec4); }
+
+  /* Responsive table */
+  .table-wrapper { overflow-x: auto; }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .filter-btns { display: flex; gap: 6px; }
+  .filter-btn {
+    padding: 6px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    background: #fffdfe;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn.active {
+    background: linear-gradient(135deg,#5fc99a,#ff8fb8);
+    color: #fff;
+    border-color: transparent;
+  }
+  .filter-btn:hover:not(.active) { background: var(--accent-light); color: var(--accent); }
+
+  /* Themes (anime pink-green as default) */
+  body.theme-green  { --primary:#5fc99a; --primary-dark:#3fae7d; --primary-light:#d6f3e7; --accent:#ff8fb8; --accent-light:#ffe1ec; --bg:linear-gradient(135deg,#fdeef6 0%,#eafaf1 55%,#f3f0fb 100%); --card-bg:#fffdfe; --text:#5b5566; --text-secondary:#a59bb2; --border:#f3dce8; }
+  body.theme-blue   { --primary:#5fb3e8; --primary-dark:#3f8fd0; --primary-light:#dceefb; --accent:#b78bff; --accent-light:#efe6ff; --bg:linear-gradient(135deg,#eef5ff 0%,#e8fbf6 100%); --card-bg:#fffdfe; --text:#4a5568; --text-secondary:#8593a8; --border:#e0ecfb; }
+  body.theme-pink   { --primary:#ff8fb8; --primary-dark:#ec6a9c; --primary-light:#ffe1ec; --accent:#b78bff; --accent-light:#efe6ff; --bg:linear-gradient(135deg,#fff0f6 0%,#fdeef6 100%); --card-bg:#fffdfe; --text:#8a4a66; --text-secondary:#b67a92; --border:#ffd6e6; }
+  body.theme-dark   { --primary:#5fd6a6; --primary-dark:#3fae7d; --primary-light:#1c3b32; --accent:#ff8fb8; --accent-light:#3a2540; --bg:linear-gradient(135deg,#1a1530 0%,#211a2e 100%); --card-bg:#2a2440; --text:#f1ecf6; --text-secondary:#a99fc0; --border:#3a3357; --shadow:0 8px 22px rgba(0,0,0,0.35); --shadow-lg:0 16px 40px rgba(0,0,0,0.45); }
+
+  /* Settings */
+  .avatar-row { display: flex; align-items: center; gap: 16px; }
+  .avatar-preview {
+    width: 72px; height: 72px; border-radius: 22px;
+    background: var(--accent-light); display: flex; align-items: center; justify-content: center;
+    overflow: hidden; border: 2.5px solid #ffd1e6; flex-shrink: 0;
+  }
+  .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .swatch-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .swatch {
+    width: 46px; height: 46px; border-radius: 14px; cursor: pointer;
+    border: 3px solid transparent; position: relative; transition: transform .15s, border-color .15s;
+  }
+  .swatch:hover { transform: scale(1.08); }
+  .swatch.active { border-color: var(--accent); }
+  .swatch .tick {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    color: #fff; font-size: 20px; font-weight: bold; text-shadow: 0 1px 3px rgba(0,0,0,.4);
+  }
+  .swatch-name { font-size: 11px; color: var(--text-secondary); text-align: center; margin-top: 2px; }
+
+  /* Tip box */
+  .tip-box {
+    margin-top: 14px;
+    padding: 13px 15px;
+    background: linear-gradient(135deg,#fff5fa,#f0fbf6);
+    border: 1px solid #ffe1ec;
+    border-radius: 16px;
+    font-size: 12px;
+    color: #8a7a92;
+    line-height: 1.7;
+  }
+  .tip-box b { color: var(--accent); }
+
+  /* Dark-mode friendly tweaks */
+  .form-input { background: var(--card-bg); color: var(--text); }
+  .filter-btn { background: var(--card-bg); }
+  .history-table tbody tr:hover { background: var(--accent-light); }
+</style>
+</head>
+<body>
+<div class="bg-decor"></div>
+<div class="bg-blob pink"></div>
+<div class="bg-blob green"></div>
+<div class="float-heart" style="top:120px; right:30px;">🌸</div>
+<div class="float-heart" style="bottom:160px; left:24px; animation-delay:1.5s;">💚</div>
+<div class="float-heart" style="top:50%; right:6%; animation-delay:3s;">✨</div>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="brand-avatar" id="headerAvatar"></div>
+      <div>
+        <h1><span class="emoji">🌸</span> 减肥少女日记</h1>
+        <p>记录每一次努力，遇见更轻盈的自己</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-ghost" onclick="openSettings()">⚙️ 设置</button>
+      <button class="btn btn-ghost" onclick="openGoalModal()">🎯 目标</button>
+      <button class="btn btn-ghost" onclick="fullBackup()">💾 备份</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">📥 导入</button>
+      <button class="btn btn-ghost" onclick="exportData()">📤 导出</button>
+    </div>
+    <input type="file" id="importFile" accept=".csv,.json" style="display:none" onchange="importData(this)">
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card c1">
+      <div class="stat-label">当前体重</div>
+      <div class="stat-value" id="statCurrent">--<span class="unit">斤</span></div>
+      <div class="stat-sub" id="statCurrentSub">暂无记录</div>
+    </div>
+    <div class="stat-card c2">
+      <div class="stat-label">初始体重</div>
+      <div class="stat-value" id="statStart">--<span class="unit">斤</span></div>
+      <div class="stat-sub" id="statStartSub">--</div>
+    </div>
+    <div class="stat-card c3">
+      <div class="stat-label">已减重</div>
+      <div class="stat-value" id="statLost">--<span class="unit">斤</span></div>
+      <div class="stat-sub" id="statLostSub">--</div>
+    </div>
+    <div class="stat-card c4">
+      <div class="stat-label">距目标</div>
+      <div class="stat-value" id="statGoal">--<span class="unit">斤</span></div>
+      <div class="stat-sub" id="statGoalSub">未设置目标</div>
+    </div>
+    <div class="stat-card c5">
+      <div class="stat-label">记录天数</div>
+      <div class="stat-value" id="statDays">0<span class="unit">天</span></div>
+      <div class="stat-sub" id="statDaysSub">--</div>
+    </div>
+  </div>
+
+  <!-- Main Grid: Chart + Entry Form -->
+  <div class="main-grid">
+    <!-- Chart -->
+    <div class="card">
+      <div class="section-header">
+        <div class="card-title">📊 体重趋势</div>
+        <div class="filter-btns">
+          <button class="filter-btn active" data-range="all" onclick="changeChartRange('all')">全部</button>
+          <button class="filter-btn" data-range="30" onclick="changeChartRange('30')">近30天</button>
+          <button class="filter-btn" data-range="7" onclick="changeChartRange('7')">近7天</button>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="weightChart"></canvas>
+      </div>
+      <div class="goal-section" id="goalSection">
+        <div class="goal-header">
+          <span>目标进度</span>
+          <span id="goalPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="goalProgress" style="width: 0%"></div>
+        </div>
+        <div class="goal-detail" id="goalDetail">点击「目标」设定你的减重目标</div>
+      </div>
+    </div>
+
+    <!-- Entry Form -->
+    <div class="card">
+      <div class="card-title">✏️ 记录体重</div>
+      <form id="entryForm" onsubmit="addEntry(event)">
+        <div class="form-group">
+          <label class="form-label">日期</label>
+          <input type="date" class="form-input" id="entryDate" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">体重</label>
+          <div class="input-with-suffix">
+            <input type="number" class="form-input" id="entryWeight" step="0.1" min="50" max="500" placeholder="例如：140.5" required>
+            <span class="suffix">斤</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">备注（可选）</label>
+          <input type="text" class="form-input" id="entryNote" placeholder="例：晨起空腹、运动后..." maxlength="50">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">💾 保存记录</button>
+      </form>
+      <div class="tip-box">
+        💡 <b>小贴士：</b>建议每天固定时间（如晨起空腹）称重，数据更可比。体重波动正常，关注长期趋势就好～<br>
+        🔐 <b>数据保护：</b>定期点「💾 备份」存一份到微信/微云/iCloud，换手机或链接失效时用「📥 导入」恢复。
+      </div>
+    </div>
+  </div>
+
+  <!-- History Table -->
+  <div class="card">
+    <div class="section-header">
+      <div class="card-title">📋 历史记录</div>
+      <button class="btn btn-danger" onclick="clearAllData()">🗑️ 清空全部</button>
+    </div>
+    <div class="table-wrapper">
+      <table class="history-table" id="historyTable">
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>体重</th>
+            <th>变化</th>
+            <th>备注</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Goal Modal -->
+<div class="modal-overlay" id="goalModal">
+  <div class="modal">
+    <h3>🎯 设置减重目标</h3>
+    <div class="form-group">
+      <label class="form-label">目标体重（斤）</label>
+      <div class="input-with-suffix">
+        <input type="number" class="form-input" id="goalWeight" step="0.1" min="50" max="500" placeholder="例如：120">
+        <span class="suffix">斤</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeGoalModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveGoal()">保存目标</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h3>✏️ 编辑记录</h3>
+    <div class="form-group">
+      <label class="form-label">日期</label>
+      <input type="date" class="form-input" id="editDate" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label">体重（斤）</label>
+      <input type="number" class="form-input" id="editWeight" step="0.1" min="50" max="500" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label">备注</label>
+      <input type="text" class="form-input" id="editNote" maxlength="50">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeEditModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveEdit()">保存修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal" style="max-width:470px;">
+    <h3>⚙️ 个性化设置</h3>
+
+    <div class="form-group">
+      <label class="form-label">头像</label>
+      <div class="avatar-row">
+        <div class="avatar-preview" id="avatarPreview"></div>
+        <div>
+          <button type="button" class="btn btn-ghost" onclick="document.getElementById('avatarInput').click()">上传头像</button>
+          <button type="button" class="btn btn-danger" id="removeAvatarBtn" style="display:none; margin-left:8px;" onclick="removeAvatar()">移除</button>
+        </div>
+      </div>
+      <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">主题配色</label>
+      <div class="swatch-row" id="themeSwatches"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">背景</label>
+      <div class="swatch-row" id="bgSwatches"></div>
+      <button type="button" class="btn btn-ghost" style="margin-top:12px;" onclick="document.getElementById('bgInput').click()">🖼️ 上传背景图</button>
+      <input type="file" id="bgInput" accept="image/*" style="display:none" onchange="uploadBackground(this)">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeSettings()">完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ====== Mascot (cute anime girl, inline SVG) ======
+const MASCOT_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="100%" height="100%">
+  <defs>
+    <radialGradient id="mis_iris" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#bff0d8"/>
+      <stop offset="55%" stop-color="#5fc99a"/>
+      <stop offset="100%" stop-color="#3fae7d"/>
+    </radialGradient>
+    <linearGradient id="mis_hair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffc6e0"/>
+      <stop offset="100%" stop-color="#ff8fb8"/>
+    </linearGradient>
+    <linearGradient id="mis_top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a8e6cf"/>
+      <stop offset="100%" stop-color="#5fc99a"/>
+    </linearGradient>
+  </defs>
+  <!-- back hair / twin tails -->
+  <path d="M40 70 C10 92 14 172 42 192 C56 150 58 110 60 96 Z" fill="url(#mis_hair)"/>
+  <path d="M160 70 C190 92 186 172 158 192 C144 150 142 110 140 96 Z" fill="url(#mis_hair)"/>
+  <!-- body / top -->
+  <path d="M70 176 Q100 166 130 176 L139 236 L61 236 Z" fill="url(#mis_top)"/>
+  <path d="M85 179 Q100 193 115 179 L110 201 Q100 207 90 201 Z" fill="#fff"/>
+  <!-- neck -->
+  <rect x="92" y="158" width="16" height="20" rx="6" fill="#ffe2cf"/>
+  <!-- face -->
+  <ellipse cx="100" cy="120" rx="46" ry="48" fill="#fff1e6"/>
+  <!-- bangs -->
+  <path d="M54 110 C50 70 80 48 100 48 C120 48 150 70 146 110 C140 92 130 84 122 92 C120 70 110 64 100 64 C90 64 80 70 78 92 C70 84 60 92 54 110 Z" fill="url(#mis_hair)"/>
+  <!-- eyes -->
+  <ellipse cx="82" cy="124" rx="13" ry="16" fill="url(#mis_iris)"/>
+  <ellipse cx="118" cy="124" rx="13" ry="16" fill="url(#mis_iris)"/>
+  <ellipse cx="82" cy="126" rx="7" ry="9" fill="#2b6b4f"/>
+  <ellipse cx="118" cy="126" rx="7" ry="9" fill="#2b6b4f"/>
+  <circle cx="86" cy="119" r="4" fill="#fff"/>
+  <circle cx="122" cy="119" r="4" fill="#fff"/>
+  <circle cx="79" cy="130" r="2" fill="#fff" opacity="0.85"/>
+  <circle cx="115" cy="130" r="2" fill="#fff" opacity="0.85"/>
+  <path d="M69 118 Q82 106 95 118" stroke="#3a2b33" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M105 118 Q118 106 131 118" stroke="#3a2b33" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- blush -->
+  <ellipse cx="68" cy="140" rx="9" ry="6" fill="#ff8fb8" opacity="0.5"/>
+  <ellipse cx="132" cy="140" rx="9" ry="6" fill="#ff8fb8" opacity="0.5"/>
+  <!-- mouth -->
+  <path d="M94 146 Q100 152 106 146" stroke="#d66a8c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- bow -->
+  <g transform="translate(146,58)">
+    <path d="M0 0 L-16 -8 L-16 8 Z" fill="#ff7eb3"/>
+    <path d="M0 0 L16 -8 L16 8 Z" fill="#ff7eb3"/>
+    <circle cx="0" cy="0" r="5" fill="#ffd1e6"/>
+  </g>
+  <!-- sparkles -->
+  <path d="M38 38 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 z" fill="#fff" opacity="0.9"/>
+  <path d="M168 118 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5 z" fill="#bff0d8" opacity="0.9"/>
+</svg>`;
+
+// ====== Data Layer ======
+const STORAGE_KEY = 'weightTrackerData';
+let chartRange = 'all';
+let weightChart = null;
+let editingId = null;
+
+function defaultData() {
+  return {
+    entries: [],
+    goal: null,
+    settings: { avatar: null, background: 'default', theme: 'green' }
+  };
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultData();
+    const d = JSON.parse(raw);
+    const def = defaultData();
+    return {
+      ...def,
+      ...d,
+      settings: { ...def.settings, ...(d.settings || {}) }
+    };
+  } catch(e) {
+    return defaultData();
+  }
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function getData() {
+  return loadData();
+}
+
+// ====== Toast ======
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ====== Date Utils ======
+function todayStr() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function formatDate(s) {
+  const d = new Date(s);
+  return `${d.getMonth()+1}月${d.getDate()}日`;
+}
+
+function formatDateFull(s) {
+  const d = new Date(s);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function daysBetween(d1, d2) {
+  const a = new Date(d1);
+  const b = new Date(d2);
+  return Math.round((b - a) / (1000*60*60*24));
+}
+
+// ====== Entry Operations ======
+function addEntry(e) {
+  e.preventDefault();
+  const date = document.getElementById('entryDate').value;
+  const weight = parseFloat(document.getElementById('entryWeight').value);
+  const note = document.getElementById('entryNote').value.trim();
+
+  if (!date || isNaN(weight) || weight < 50 || weight > 500) {
+    showToast('请输入有效的体重数据（50-500斤）', 'error');
+    return;
+  }
+
+  const data = getData();
+
+  const existing = data.entries.find(e => e.date === date);
+  if (existing) {
+    existing.weight = weight;
+    existing.note = note;
+    showToast('已更新 ' + formatDate(date) + ' 的记录', 'success');
+  } else {
+    data.entries.push({
+      id: Date.now().toString(),
+      date: date,
+      weight: weight,
+      note: note,
+      createdAt: new Date().toISOString()
+    });
+    showToast('记录成功！' + weight + ' 斤', 'success');
+  }
+
+  data.entries.sort((a,b) => new Date(a.date) - new Date(b.date));
+  saveData(data);
+
+  document.getElementById('entryWeight').value = '';
+  document.getElementById('entryNote').value = '';
+
+  renderAll();
+}
+
+function deleteEntry(id) {
+  const data = getData();
+  data.entries = data.entries.filter(e => e.id !== id);
+  saveData(data);
+  showToast('已删除该记录');
+  renderAll();
+}
+
+function openEdit(id) {
+  const data = getData();
+  const entry = data.entries.find(e => e.id === id);
+  if (!entry) return;
+  editingId = id;
+  document.getElementById('editDate').value = entry.date;
+  document.getElementById('editWeight').value = entry.weight;
+  document.getElementById('editNote').value = entry.note || '';
+  document.getElementById('editModal').classList.add('active');
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('active');
+  editingId = null;
+}
+
+function saveEdit() {
+  const date = document.getElementById('editDate').value;
+  const weight = parseFloat(document.getElementById('editWeight').value);
+  const note = document.getElementById('editNote').value.trim();
+
+  if (!date || isNaN(weight) || weight < 50 || weight > 500) {
+    showToast('请输入有效的数据', 'error');
+    return;
+  }
+
+  const data = getData();
+  const entry = data.entries.find(e => e.id === editingId);
+  if (entry) {
+    entry.date = date;
+    entry.weight = weight;
+    entry.note = note;
+    data.entries.sort((a,b) => new Date(a.date) - new Date(b.date));
+    saveData(data);
+    showToast('修改成功', 'success');
+  }
+  closeEditModal();
+  renderAll();
+}
+
+// ====== Goal ======
+function openGoalModal() {
+  const data = getData();
+  document.getElementById('goalWeight').value = data.goal || '';
+  document.getElementById('goalModal').classList.add('active');
+}
+
+function closeGoalModal() {
+  document.getElementById('goalModal').classList.remove('active');
+}
+
+function saveGoal() {
+  const goal = parseFloat(document.getElementById('goalWeight').value);
+  if (isNaN(goal) || goal < 50 || goal > 500) {
+    showToast('请输入有效的目标体重', 'error');
+    return;
+  }
+  const data = getData();
+  data.goal = goal;
+  saveData(data);
+  closeGoalModal();
+  showToast('目标已设置为 ' + goal + ' 斤', 'success');
+  renderAll();
+}
+
+// ====== Clear All ======
+function clearAllData() {
+  if (!confirm('确定要清空所有记录吗？此操作不可撤销！')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  showToast('已清空所有数据');
+  renderAll();
+}
+
+// ====== Export CSV ======
+function exportData() {
+  const data = getData();
+  if (data.entries.length === 0) {
+    showToast('暂无数据可导出', 'error');
+    return;
+  }
+  let csv = '﻿日期,体重(斤),备注\n';
+  data.entries.forEach(e => {
+    csv += `${e.date},${e.weight},${e.note || ''}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `体重记录_${todayStr()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV 已导出', 'success');
+}
+
+// ====== Full Backup (JSON snapshot) ======
+function fullBackup() {
+  const data = getData();
+  if (data.entries.length === 0 && !data.goal) {
+    showToast('暂无数据可备份', 'error');
+    return;
+  }
+  const snapshot = {
+    app: 'weight-loss-tracker',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    goal: data.goal,
+    settings: data.settings,
+    entries: data.entries
+  };
+  const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `体重备份_${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('完整备份已保存（存到微信/微云/iCloud）', 'success');
+}
+
+// ====== Import (CSV or JSON) ======
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const text = e.target.result;
+      let importedEntries = [];
+      let importedGoal = undefined;
+
+      let json = null;
+      if (file.name.toLowerCase().endsWith('.json')) {
+        json = JSON.parse(text);
+        if (json && Array.isArray(json.entries)) {
+          importedEntries = json.entries;
+          importedGoal = json.goal;
+        } else {
+          throw new Error('文件格式不正确');
+        }
+      } else {
+        importedEntries = parseCSV(text);
+      }
+
+      const valid = [];
+      for (const it of importedEntries) {
+        const w = parseFloat(it.weight);
+        if (!it.date || isNaN(w) || w < 50 || w > 500) continue;
+        valid.push({
+          id: it.id || (Date.now().toString() + Math.random().toString(36).slice(2,6)),
+          date: it.date,
+          weight: w,
+          note: (it.note || '').toString(),
+          createdAt: it.createdAt || new Date().toISOString()
+        });
+      }
+
+      if (valid.length === 0) {
+        showToast('没有可用的记录', 'error');
+        input.value = '';
+        return;
+      }
+
+      const data = getData();
+      const map = new Map();
+      data.entries.forEach(en => map.set(en.date, en));
+      valid.forEach(v => map.set(v.date, v));
+      data.entries = Array.from(map.values()).sort((a,b) => new Date(a.date) - new Date(b.date));
+
+      if (importedGoal !== undefined && importedGoal !== null) {
+        const g = parseFloat(importedGoal);
+        if (!isNaN(g)) data.goal = g;
+      }
+
+      if (json && json.settings) {
+        data.settings = { ...defaultData().settings, ...json.settings };
+      }
+
+      saveData(data);
+      showToast(`已导入 ${valid.length} 条记录`, 'success');
+      renderAll();
+    } catch (err) {
+      showToast('导入失败：' + err.message, 'error');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(text) {
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+  const result = [];
+  const start = /日期|date|weight/i.test(lines[0]) ? 1 : 0;
+  for (let i = start; i < lines.length; i++) {
+    const parts = lines[i].split(',');
+    if (parts.length < 2) continue;
+    result.push({ date: parts[0].trim(), weight: parts[1].trim(), note: parts[2] ? parts[2].trim() : '' });
+  }
+  return result;
+}
+
+// ====== Chart ======
+function changeChartRange(range) {
+  chartRange = range;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.range === range);
+  });
+  renderChart();
+}
+
+function renderChart() {
+  const data = getData();
+  let entries = [...data.entries];
+
+  if (chartRange !== 'all') {
+    const days = parseInt(chartRange);
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    entries = entries.filter(e => new Date(e.date) >= cutoff);
+  }
+
+  const ctx = document.getElementById('weightChart').getContext('2d');
+
+  if (entries.length === 0) {
+    if (weightChart) { weightChart.destroy(); weightChart = null; }
+    ctx.font = '14px sans-serif';
+    ctx.fillStyle = '#b9aec4';
+    ctx.textAlign = 'center';
+    ctx.fillText('暂无数据，开始记录你的第一条体重吧！', ctx.canvas.width/2, ctx.canvas.height/2);
+    return;
+  }
+
+  const labels = entries.map(e => formatDate(e.date));
+  const weights = entries.map(e => e.weight);
+
+  const p = cssVar('--primary') || '#5fc99a';
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+  gradient.addColorStop(0, hexToRgba(p, 0.28));
+  gradient.addColorStop(1, hexToRgba(p, 0.01));
+
+  const datasets = [{
+    label: '体重 (斤)',
+    data: weights,
+    borderColor: p,
+    backgroundColor: gradient,
+    borderWidth: 2.5,
+    fill: true,
+    tension: 0.35,
+    pointBackgroundColor: p,
+    pointBorderColor: '#fff',
+    pointBorderWidth: 2,
+    pointRadius: 4,
+    pointHoverRadius: 7,
+  }];
+
+  if (data.goal) {
+    datasets.push({
+      label: '目标',
+      data: new Array(entries.length).fill(data.goal),
+      borderColor: '#ff8fb8',
+      borderWidth: 1.5,
+      borderDash: [6, 4],
+      fill: false,
+      pointRadius: 0,
+    });
+  }
+
+  if (weightChart) weightChart.destroy();
+
+  weightChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'end',
+          labels: { font: { size: 12, family: 'PingFang SC, sans-serif' }, boxWidth: 12, boxHeight: 12 }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(123,106,130,0.92)',
+          titleFont: { size: 13, weight: 'bold' },
+          bodyFont: { size: 13 },
+          padding: 12,
+          cornerRadius: 12,
+          callbacks: {
+            label: function(ctx) {
+              return ctx.dataset.label + ': ' + ctx.parsed.y + ' 斤';
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          grid: { color: 'rgba(243,220,232,0.6)' },
+          ticks: { font: { size: 12 }, color: '#b9aec4' }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 11 }, color: '#b9aec4', maxRotation: 45, minRotation: 0 }
+        }
+      }
+    }
+  });
+}
+
+// ====== Stats ======
+function renderStats() {
+  const data = getData();
+  const entries = data.entries;
+
+  const current = entries.length > 0 ? entries[entries.length-1] : null;
+  const first = entries.length > 0 ? entries[0] : null;
+
+  document.getElementById('statCurrent').innerHTML = current
+    ? `${current.weight}<span class="unit">斤</span>`
+    : `--<span class="unit">斤</span>`;
+
+  if (current) {
+    const prevIdx = entries.length - 2;
+    if (prevIdx >= 0) {
+      const diff = current.weight - entries[prevIdx].weight;
+      if (diff < 0) {
+        document.getElementById('statCurrentSub').innerHTML = `<span class="stat-trend-down">↓ ${Math.abs(diff).toFixed(1)} 斤</span> 较上次`;
+      } else if (diff > 0) {
+        document.getElementById('statCurrentSub').innerHTML = `<span class="stat-trend-up">↑ ${diff.toFixed(1)} 斤</span> 较上次`;
+      } else {
+        document.getElementById('statCurrentSub').textContent = '与上次持平';
+      }
+    } else {
+      document.getElementById('statCurrentSub').textContent = formatDate(current.date) + ' 记录';
+    }
+  } else {
+    document.getElementById('statCurrentSub').textContent = '暂无记录';
+  }
+
+  document.getElementById('statStart').innerHTML = first
+    ? `${first.weight}<span class="unit">斤</span>`
+    : `--<span class="unit">斤</span>`;
+  document.getElementById('statStartSub').textContent = first ? formatDate(first.date) + ' 开始' : '--';
+
+  if (current && first) {
+    const lost = first.weight - current.weight;
+    document.getElementById('statLost').innerHTML = `${lost >= 0 ? '-' : '+'}${Math.abs(lost).toFixed(1)}<span class="unit">斤</span>`;
+    if (lost > 0) {
+      document.getElementById('statLostSub').innerHTML = `<span class="stat-trend-down">已减重 ${lost.toFixed(1)} 斤 🎉</span>`;
+    } else if (lost < 0) {
+      document.getElementById('statLostSub').innerHTML = `<span class="stat-trend-up">增重了 ${Math.abs(lost).toFixed(1)} 斤</span>`;
+    } else {
+      document.getElementById('statLostSub').textContent = '体重未变化';
+    }
+  } else {
+    document.getElementById('statLost').innerHTML = `--<span class="unit">斤</span>`;
+    document.getElementById('statLostSub').textContent = '--';
+  }
+
+  if (data.goal && current) {
+    const remaining = current.weight - data.goal;
+    document.getElementById('statGoal').innerHTML = `${remaining > 0 ? '' : '✓ '}${Math.abs(remaining).toFixed(1)}<span class="unit">斤</span>`;
+    if (remaining > 0) {
+      document.getElementById('statGoalSub').textContent = `目标 ${data.goal} 斤`;
+    } else {
+      document.getElementById('statGoalSub').innerHTML = `<span class="stat-trend-down">已达成目标！🎊</span>`;
+    }
+  } else {
+    document.getElementById('statGoal').innerHTML = `--<span class="unit">斤</span>`;
+    document.getElementById('statGoalSub').textContent = data.goal ? '请记录体重' : '未设置目标';
+  }
+
+  if (first && current) {
+    const days = daysBetween(first.date, current.date);
+    document.getElementById('statDays').innerHTML = `${days}<span class="unit">天</span>`;
+    document.getElementById('statDaysSub').textContent = `从 ${formatDate(first.date)} 至今`;
+  } else {
+    document.getElementById('statDays').innerHTML = `0<span class="unit">天</span>`;
+    document.getElementById('statDaysSub').textContent = '--';
+  }
+
+  if (data.goal && first && current) {
+    const totalToLose = first.weight - data.goal;
+    const lostSoFar = first.weight - current.weight;
+    let pct = 0;
+    if (totalToLose > 0) {
+      pct = Math.min(100, Math.max(0, (lostSoFar / totalToLose) * 100));
+    } else if (totalToLose < 0) {
+      pct = Math.min(100, Math.max(0, ((current.weight - first.weight) / Math.abs(totalToLose)) * 100));
+    } else {
+      pct = 100;
+    }
+    document.getElementById('goalProgress').style.width = pct.toFixed(1) + '%';
+    document.getElementById('goalPercent').textContent = pct.toFixed(0) + '%';
+    document.getElementById('goalDetail').textContent =
+      `起始 ${first.weight} 斤 → 目标 ${data.goal} 斤 | 当前 ${current.weight} 斤`;
+  } else {
+    document.getElementById('goalProgress').style.width = '0%';
+    document.getElementById('goalPercent').textContent = '0%';
+    document.getElementById('goalDetail').textContent = '点击「目标」设定你的减重目标';
+  }
+}
+
+// ====== History Table ======
+function renderHistory() {
+  const data = getData();
+  const tbody = document.getElementById('historyBody');
+
+  if (data.entries.length === 0) {
+    tbody.innerHTML = `
+      <tr><td colspan="5">
+        <div class="empty-state">
+          <div class="icon">🌸</div>
+          <div>还没有记录，在右侧填写你的第一条体重数据吧！</div>
+        </div>
+      </td></tr>`;
+    return;
+  }
+
+  const reversed = [...data.entries].reverse();
+  tbody.innerHTML = reversed.map((e, idx) => {
+    const actualIdx = data.entries.length - 1 - idx;
+    const prev = actualIdx > 0 ? data.entries[actualIdx - 1] : null;
+    let changeHtml = '<span style="color:var(--text-secondary)">—</span>';
+    if (prev) {
+      const diff = e.weight - prev.weight;
+      if (diff < 0) {
+        changeHtml = `<span class="weight-change stat-trend-down">↓ ${Math.abs(diff).toFixed(1)} 斤</span>`;
+      } else if (diff > 0) {
+        changeHtml = `<span class="weight-change stat-trend-up">↑ ${diff.toFixed(1)} 斤</span>`;
+      } else {
+        changeHtml = `<span class="weight-change" style="color:var(--text-secondary)">→ 0</span>`;
+      }
+    }
+    return `
+      <tr>
+        <td>${formatDateFull(e.date)}</td>
+        <td><span class="weight-badge">${e.weight}</span> 斤</td>
+        <td>${changeHtml}</td>
+        <td>${e.note ? `<span class="note-text">${escapeHtml(e.note)}</span>` : '<span style="color:#e2d4dd">—</span>'}</td>
+        <td style="white-space:nowrap;">
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;" onclick="openEdit('${e.id}')">编辑</button>
+          <button class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteEntry('${e.id}')">删除</button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ====== Settings (avatar / theme / background) ======
+const THEMES = [
+  { key:'green', name:'清新粉绿', color:'#5fc99a' },
+  { key:'blue',  name:'晴空蓝',   color:'#5fb3e8' },
+  { key:'pink',  name:'樱花粉',   color:'#ff8fb8' },
+  { key:'dark',  name:'星夜',     color:'#2a2440' },
+];
+const BG_PRESETS = [
+  { key:'mint',     name:'薄荷',   value:'linear-gradient(135deg,#d6f3e7,#a8e6cf)' },
+  { key:'sakura',   name:'樱花',   value:'linear-gradient(135deg,#ffe1ec,#ffc6e0)' },
+  { key:'sky',      name:'晴空',   value:'linear-gradient(135deg,#d6ebfb,#a8d8f0)' },
+  { key:'lavender', name:'薰衣草', value:'linear-gradient(135deg,#e9e1fb,#c9b8f0)' },
+];
+
+function cssVar(n){ return getComputedStyle(document.body).getPropertyValue(n).trim(); }
+function hexToRgba(hex,a){
+  hex=(hex||'').replace('#','');
+  if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+  const r=parseInt(hex.slice(0,2),16)||0, g=parseInt(hex.slice(2,4),16)||0, b=parseInt(hex.slice(4,6),16)||0;
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function applySettings() {
+  const s = getData().settings;
+  document.body.className = (document.body.className.replace(/theme-\w+/g,'') + ' theme-' + s.theme).trim();
+  const bg = s.background;
+  if (!bg || bg === 'default') {
+    document.body.style.background = 'var(--bg)';
+  } else if (bg.indexOf('img:') === 0) {
+    document.body.style.background = 'center / cover fixed no-repeat url("' + bg.slice(4) + '")';
+  } else {
+    const found = BG_PRESETS.find(p => p.key === bg);
+    document.body.style.background = found ? found.value : 'var(--bg)';
+  }
+  renderAvatar();
+}
+
+function renderAvatar() {
+  const av = getData().settings.avatar;
+  ['headerAvatar','avatarPreview'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = av ? `<img src="${av}" alt="头像">` : MASCOT_SVG;
+  });
+  const rm = document.getElementById('removeAvatarBtn');
+  if (rm) rm.style.display = av ? 'inline-block' : 'none';
+}
+
+function renderSettingsSwatches() {
+  const s = getData().settings;
+  const ts = document.getElementById('themeSwatches');
+  ts.innerHTML = THEMES.map(t => `
+    <div>
+      <div class="swatch ${s.theme===t.key?'active':''}" style="background:${t.color}" title="${t.name}" onclick="selectTheme('${t.key}')">
+        ${s.theme===t.key?'<span class="tick">✓</span>':''}
+      </div>
+      <div class="swatch-name">${t.name}</div>
+    </div>`).join('');
+  const bs = document.getElementById('bgSwatches');
+  let html = `
+    <div>
+      <div class="swatch ${!s.background||s.background==='default'?'active':''}" style="background:linear-gradient(135deg,#fdeef6,#eafaf1); box-shadow: inset 0 0 0 1px var(--border);" title="默认" onclick="selectBg('default')">
+        ${(!s.background||s.background==='default')?'<span class="tick">✓</span>':''}
+      </div>
+      <div class="swatch-name">默认</div>
+    </div>`;
+  BG_PRESETS.forEach(p => {
+    html += `
+    <div>
+      <div class="swatch ${s.background===p.key?'active':''}" style="background:${p.value}" title="${p.name}" onclick="selectBg('${p.key}')">
+        ${s.background===p.key?'<span class="tick">✓</span>':''}
+      </div>
+      <div class="swatch-name">${p.name}</div>
+    </div>`;
+  });
+  if (s.background && s.background.indexOf('img:') === 0) {
+    html += `
+    <div>
+      <div class="swatch active" style="background:center/cover no-repeat url('${s.background.slice(4)}')" title="自定义" onclick="selectBg('default')">
+        <span class="tick">✓</span>
+      </div>
+      <div class="swatch-name">自定义</div>
+    </div>`;
+  }
+  bs.innerHTML = html;
+}
+
+function openSettings() {
+  renderAvatar();
+  renderSettingsSwatches();
+  document.getElementById('settingsModal').classList.add('active');
+}
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('active');
+}
+function selectTheme(key) {
+  const data = getData();
+  data.settings.theme = key;
+  saveData(data);
+  applySettings();
+  renderSettingsSwatches();
+  renderChart();
+  showToast('主题已切换');
+}
+function selectBg(key) {
+  const data = getData();
+  data.settings.background = key;
+  saveData(data);
+  applySettings();
+  renderSettingsSwatches();
+  showToast('背景已更新');
+}
+
+function fileToResizedDataURL(file, maxDim, cb) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(maxDim/img.width, maxDim/img.height, 1);
+      const w = Math.max(1, Math.round(img.width*scale));
+      const h = Math.max(1, Math.round(img.height*scale));
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function uploadAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  fileToResizedDataURL(file, 256, url => {
+    const data = getData();
+    data.settings.avatar = url;
+    saveData(data);
+    renderAvatar();
+    showToast('头像已更新', 'success');
+  });
+  input.value = '';
+}
+function removeAvatar() {
+  const data = getData();
+  data.settings.avatar = null;
+  saveData(data);
+  renderAvatar();
+  showToast('已移除头像');
+}
+function uploadBackground(input) {
+  const file = input.files[0];
+  if (!file) return;
+  fileToResizedDataURL(file, 1280, url => {
+    const data = getData();
+    data.settings.background = 'img:' + url;
+    saveData(data);
+    applySettings();
+    renderSettingsSwatches();
+    showToast('背景已设置', 'success');
+  });
+  input.value = '';
+}
+
+// ====== Render All ======
+function renderAll() {
+  renderStats();
+  renderChart();
+  renderHistory();
+}
+
+// ====== Init ======
+document.getElementById('entryDate').value = todayStr();
+applySettings();
+
+document.getElementById('goalModal').addEventListener('click', function(e) {
+  if (e.target === this) closeGoalModal();
+});
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+document.getElementById('settingsModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSettings();
+});
+
+renderAll();
+</script>
+</body>
+</html>
