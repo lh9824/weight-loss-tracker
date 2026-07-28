@@ -506,6 +506,33 @@
   .form-input { background: var(--card-bg); color: var(--text); }
   .filter-btn { background: var(--card-bg); }
   .history-table tbody tr:hover { background: var(--accent-light); }
+
+  /* ===== 三页分页（底部 Tab 导航） ===== */
+  body { padding-bottom: 98px; }
+  .page { display: none; }
+  .page.active { display: block; animation: pageIn .26s ease; }
+  @keyframes pageIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
+  .greeting { font-size:15px; font-weight:700; color:#7a6a82; margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+  .me-actions { display:flex; flex-wrap:wrap; gap:10px; }
+  .me-actions .btn { flex:1 1 calc(50% - 5px); justify-content:center; }
+  .tabbar {
+    position: fixed; left:0; right:0; bottom:0; z-index:900;
+    background: rgba(255,253,254,0.94);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 20px rgba(255,143,184,0.14);
+    padding: 7px 0 calc(7px + env(safe-area-inset-bottom));
+  }
+  .tabbar .tabs-inner { display:flex; width:100%; max-width:1100px; margin:0 auto; }
+  .tab-item {
+    flex:1; border:none; background:none; cursor:pointer; font-family:inherit;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:6px 0; color:var(--text-secondary); font-size:11px; font-weight:700;
+    transition: color .2s, transform .15s;
+  }
+  .tab-item .ic { font-size:22px; line-height:1; filter: grayscale(.35); opacity:.7; transition:.2s; }
+  .tab-item.active { color: var(--primary-dark); }
+  .tab-item.active .ic { filter:none; opacity:1; transform: translateY(-1px) scale(1.08); }
 </style>
 </head>
 <body>
@@ -520,54 +547,91 @@
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <div class="brand-avatar" id="headerAvatar"></div>
+      <div class="brand-avatar" id="headerAvatar" onclick="openSettings()" style="cursor:pointer"></div>
       <div>
         <h1><span class="emoji">🌸</span> 减肥少女日记</h1>
         <p>记录每一次努力，遇见更轻盈的自己</p>
       </div>
     </div>
-    <div class="header-right">
-      <button class="btn btn-ghost" onclick="openSettings()">⚙️ 设置</button>
-      <button class="btn btn-ghost" onclick="openGoalModal()">🎯 目标</button>
-      <button class="btn btn-ghost" onclick="fullBackup()">💾 备份</button>
-      <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">📥 导入</button>
-      <button class="btn btn-ghost" onclick="exportData()">📤 导出</button>
-    </div>
-    <input type="file" id="importFile" accept=".csv,.json" style="display:none" onchange="importData(this)">
   </div>
 
-  <!-- Stats Grid -->
-  <div class="stats-grid" id="statsGrid">
-    <div class="stat-card c1">
-      <div class="stat-label">当前体重</div>
-      <div class="stat-value" id="statCurrent">--<span class="unit">斤</span></div>
-      <div class="stat-sub" id="statCurrentSub">暂无记录</div>
+  <!-- ===== PAGE 1 · 记录 ===== -->
+  <div class="page active" id="page-record">
+    <div class="greeting">🌸 嗨～今天也要加油哦，更轻盈的自己正在路上！</div>
+    <div class="stats-grid">
+      <div class="stat-card c1">
+        <div class="stat-label">当前体重</div>
+        <div class="stat-value" id="statCurrent">--<span class="unit">斤</span></div>
+        <div class="stat-sub" id="statCurrentSub">暂无记录</div>
+      </div>
+      <div class="stat-card c3">
+        <div class="stat-label">已减重</div>
+        <div class="stat-value" id="statLost">--<span class="unit">斤</span></div>
+        <div class="stat-sub" id="statLostSub">--</div>
+      </div>
+      <div class="stat-card c4">
+        <div class="stat-label">距目标</div>
+        <div class="stat-value" id="statGoal">--<span class="unit">斤</span></div>
+        <div class="stat-sub" id="statGoalSub">未设置目标</div>
+      </div>
     </div>
-    <div class="stat-card c2">
-      <div class="stat-label">初始体重</div>
-      <div class="stat-value" id="statStart">--<span class="unit">斤</span></div>
-      <div class="stat-sub" id="statStartSub">--</div>
+
+  <!-- 目标进度 -->
+  <div class="card goal-section">
+    <div class="goal-header">
+      <span>🎯 目标进度</span>
+      <span id="goalPercent">0%</span>
     </div>
-    <div class="stat-card c3">
-      <div class="stat-label">已减重</div>
-      <div class="stat-value" id="statLost">--<span class="unit">斤</span></div>
-      <div class="stat-sub" id="statLostSub">--</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="goalProgress" style="width: 0%"></div>
     </div>
-    <div class="stat-card c4">
-      <div class="stat-label">距目标</div>
-      <div class="stat-value" id="statGoal">--<span class="unit">斤</span></div>
-      <div class="stat-sub" id="statGoalSub">未设置目标</div>
-    </div>
-    <div class="stat-card c5">
-      <div class="stat-label">记录天数</div>
-      <div class="stat-value" id="statDays">0<span class="unit">天</span></div>
-      <div class="stat-sub" id="statDaysSub">--</div>
+    <div class="goal-detail" id="goalDetail">点击下面「设目标」设定你的减重目标</div>
+    <button type="button" class="btn btn-ghost" style="margin-top:12px;" onclick="openGoalModal()">✏️ 设置 / 修改目标</button>
+  </div>
+
+  <!-- 记录体重 -->
+  <div class="card">
+    <div class="card-title">✏️ 记录体重</div>
+    <form id="entryForm" onsubmit="addEntry(event)">
+      <div class="form-group">
+        <label class="form-label">日期</label>
+        <input type="date" class="form-input" id="entryDate" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">体重</label>
+        <div class="input-with-suffix">
+          <input type="number" class="form-input" id="entryWeight" step="0.1" min="50" max="500" placeholder="例如：140.5" required>
+          <span class="suffix">斤</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注（可选）</label>
+        <input type="text" class="form-input" id="entryNote" placeholder="例：晨起空腹、运动后..." maxlength="50">
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">💾 保存记录</button>
+    </form>
+    <div class="tip-box">
+      💡 <b>小贴士：</b>建议每天固定时间（如晨起空腹）称重，数据更可比。体重波动正常，关注长期趋势就好～<br>
+      🔐 <b>数据保护：</b>定期点「💾 备份」存一份到微信/微云/iCloud，换手机或链接失效时用「📥 导入」恢复。
     </div>
   </div>
 
-  <!-- Main Grid: Chart + Entry Form -->
-  <div class="main-grid">
-    <!-- Chart -->
+  </div><!-- /page-record -->
+
+  <!-- ===== PAGE 2 · 趋势 ===== -->
+  <div class="page" id="page-trend">
+    <div class="stats-grid">
+      <div class="stat-card c2">
+        <div class="stat-label">初始体重</div>
+        <div class="stat-value" id="statStart">--<span class="unit">斤</span></div>
+        <div class="stat-sub" id="statStartSub">--</div>
+      </div>
+      <div class="stat-card c5">
+        <div class="stat-label">记录天数</div>
+        <div class="stat-value" id="statDays">0<span class="unit">天</span></div>
+        <div class="stat-sub" id="statDaysSub">--</div>
+      </div>
+    </div>
     <div class="card">
       <div class="section-header">
         <div class="card-title">📊 体重趋势</div>
@@ -580,68 +644,57 @@
       <div class="chart-wrapper">
         <canvas id="weightChart"></canvas>
       </div>
-      <div class="goal-section" id="goalSection">
-        <div class="goal-header">
-          <span>目标进度</span>
-          <span id="goalPercent">0%</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="goalProgress" style="width: 0%"></div>
-        </div>
-        <div class="goal-detail" id="goalDetail">点击「目标」设定你的减重目标</div>
-      </div>
     </div>
+  </div>
 
-    <!-- Entry Form -->
+  <!-- ===== PAGE 3 · 我的 ===== -->
+  <div class="page" id="page-me">
     <div class="card">
-      <div class="card-title">✏️ 记录体重</div>
-      <form id="entryForm" onsubmit="addEntry(event)">
-        <div class="form-group">
-          <label class="form-label">日期</label>
-          <input type="date" class="form-input" id="entryDate" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">体重</label>
-          <div class="input-with-suffix">
-            <input type="number" class="form-input" id="entryWeight" step="0.1" min="50" max="500" placeholder="例如：140.5" required>
-            <span class="suffix">斤</span>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">备注（可选）</label>
-          <input type="text" class="form-input" id="entryNote" placeholder="例：晨起空腹、运动后..." maxlength="50">
-        </div>
-        <button type="submit" class="btn btn-primary btn-full">💾 保存记录</button>
-      </form>
-      <div class="tip-box">
-        💡 <b>小贴士：</b>建议每天固定时间（如晨起空腹）称重，数据更可比。体重波动正常，关注长期趋势就好～<br>
-        🔐 <b>数据保护：</b>定期点「💾 备份」存一份到微信/微云/iCloud，换手机或链接失效时用「📥 导入」恢复。
+      <div class="card-title">📦 数据管理</div>
+      <div class="me-actions">
+        <button class="btn btn-ghost" onclick="fullBackup()">💾 完整备份</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">📥 导入</button>
+        <button class="btn btn-ghost" onclick="exportData()">📤 导出CSV</button>
+        <button class="btn btn-danger" onclick="clearAllData()">🗑️ 清空全部</button>
       </div>
+    </div>
+
+    <div class="card">
+      <div class="section-header">
+        <div class="card-title">📋 历史记录</div>
+      </div>
+      <div class="table-wrapper">
+        <table class="history-table" id="historyTable">
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>体重</th>
+              <th>变化</th>
+              <th>备注</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="text-align:center;">
+      <button class="btn btn-primary btn-full" onclick="openSettings()">⚙️ 个性化设置（头像 / 主题 / 背景）</button>
     </div>
   </div>
 
-  <!-- History Table -->
-  <div class="card">
-    <div class="section-header">
-      <div class="card-title">📋 历史记录</div>
-      <button class="btn btn-danger" onclick="clearAllData()">🗑️ 清空全部</button>
+  <input type="file" id="importFile" accept=".csv,.json" style="display:none" onchange="importData(this)">
+
+  <!-- Bottom Tab Bar -->
+  <nav class="tabbar">
+    <div class="tabs-inner">
+      <button class="tab-item active" data-tab="record" onclick="switchTab('record')"><span class="ic">🌸</span>记录</button>
+      <button class="tab-item" data-tab="trend" onclick="switchTab('trend')"><span class="ic">📈</span>趋势</button>
+      <button class="tab-item" data-tab="me" onclick="switchTab('me')"><span class="ic">👤</span>我的</button>
     </div>
-    <div class="table-wrapper">
-      <table class="history-table" id="historyTable">
-        <thead>
-          <tr>
-            <th>日期</th>
-            <th>体重</th>
-            <th>变化</th>
-            <th>备注</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody id="historyBody">
-        </tbody>
-      </table>
-    </div>
-  </div>
+  </nav>
 </div>
 
 <!-- Goal Modal -->
@@ -1513,6 +1566,16 @@ function uploadBackground(input) {
     showToast('背景已设置', 'success');
   });
   input.value = '';
+}
+
+// ====== Tab Navigation (3 pages) ======
+function switchTab(name){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('page-' + name);
+  if (pg) pg.classList.add('active');
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  if (name === 'trend' && weightChart) weightChart.resize();
+  window.scrollTo(0, 0);
 }
 
 // ====== Render All ======
