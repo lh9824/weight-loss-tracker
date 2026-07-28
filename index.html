@@ -7,8 +7,8 @@
 <script src="./chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: linear-gradient(135deg, #fdeef6 0%, #eafaf1 55%, #f3f0fb 100%);
-    --card-bg: #fffdfe;
+    --bg: transparent;
+    --card-bg: transparent;
     --primary: #5fc99a;
     --primary-dark: #3fae7d;
     --primary-light: #d6f3e7;
@@ -34,6 +34,7 @@
     background: var(--bg);
     background-attachment: fixed;
     color: var(--text);
+    text-shadow: 0 1px 3px rgba(255,255,255,0.55);
     min-height: 100vh;
     padding: 20px;
     position: relative;
@@ -134,7 +135,7 @@
   }
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(255,143,184,0.42); }
   .btn-ghost {
-    background: #fffdfe;
+    background: transparent;
     color: var(--text-secondary);
     border: 1.5px solid var(--border);
   }
@@ -262,7 +263,7 @@
     font-size: 15px;
     font-family: inherit;
     transition: border-color 0.2s, box-shadow 0.2s;
-    background: #fffdfe;
+    background: transparent;
     color: var(--text);
   }
   .form-input:focus {
@@ -379,11 +380,11 @@
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(123,106,130,0.36);
+    background: rgba(123,106,130,0.12);
     z-index: 1000;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(2px);
   }
   .modal-overlay.active { display: flex; }
   .modal {
@@ -448,7 +449,7 @@
     padding: 6px 14px;
     border: 1.5px solid var(--border);
     border-radius: 999px;
-    background: #fffdfe;
+    background: transparent;
     font-size: 12px;
     font-weight: 700;
     color: var(--text-secondary);
@@ -463,10 +464,10 @@
   .filter-btn:hover:not(.active) { background: var(--accent-light); color: var(--accent); }
 
   /* Themes (anime pink-green as default) */
-  body.theme-green  { --primary:#5fc99a; --primary-dark:#3fae7d; --primary-light:#d6f3e7; --accent:#ff8fb8; --accent-light:#ffe1ec; --bg:linear-gradient(135deg,#fdeef6 0%,#eafaf1 55%,#f3f0fb 100%); --card-bg:#fffdfe; --text:#5b5566; --text-secondary:#a59bb2; --border:#f3dce8; }
-  body.theme-blue   { --primary:#5fb3e8; --primary-dark:#3f8fd0; --primary-light:#dceefb; --accent:#b78bff; --accent-light:#efe6ff; --bg:linear-gradient(135deg,#eef5ff 0%,#e8fbf6 100%); --card-bg:#fffdfe; --text:#4a5568; --text-secondary:#8593a8; --border:#e0ecfb; }
-  body.theme-pink   { --primary:#ff8fb8; --primary-dark:#ec6a9c; --primary-light:#ffe1ec; --accent:#b78bff; --accent-light:#efe6ff; --bg:linear-gradient(135deg,#fff0f6 0%,#fdeef6 100%); --card-bg:#fffdfe; --text:#8a4a66; --text-secondary:#b67a92; --border:#ffd6e6; }
-  body.theme-dark   { --primary:#5fd6a6; --primary-dark:#3fae7d; --primary-light:#1c3b32; --accent:#ff8fb8; --accent-light:#3a2540; --bg:linear-gradient(135deg,#1a1530 0%,#211a2e 100%); --card-bg:#2a2440; --text:#f1ecf6; --text-secondary:#a99fc0; --border:#3a3357; --shadow:0 8px 22px rgba(0,0,0,0.35); --shadow-lg:0 16px 40px rgba(0,0,0,0.45); }
+  body.theme-green  { --primary:#5fc99a; --primary-dark:#3fae7d; --primary-light:#d6f3e7; --accent:#ff8fb8; --accent-light:#ffe1ec; --bg:transparent; --card-bg:transparent; --text:#5b5566; --text-secondary:#a59bb2; --border:#f3dce8; }
+  body.theme-blue   { --primary:#5fb3e8; --primary-dark:#3f8fd0; --primary-light:#dceefb; --accent:#b78bff; --accent-light:#efe6ff; --bg:transparent; --card-bg:transparent; --text:#4a5568; --text-secondary:#8593a8; --border:#e0ecfb; }
+  body.theme-pink   { --primary:#ff8fb8; --primary-dark:#ec6a9c; --primary-light:#ffe1ec; --accent:#b78bff; --accent-light:#efe6ff; --bg:transparent; --card-bg:transparent; --text:#8a4a66; --text-secondary:#b67a92; --border:#ffd6e6; }
+  body.theme-dark   { --primary:#5fd6a6; --primary-dark:#3fae7d; --primary-light:#1c3b32; --accent:#ff8fb8; --accent-light:#3a2540; --bg:transparent; --card-bg:transparent; --text:#f1ecf6; --text-secondary:#a99fc0; --border:#3a3357; --shadow:0 8px 22px rgba(0,0,0,0.35); --shadow-lg:0 16px 40px rgba(0,0,0,0.45); }
 
   /* Settings */
   .avatar-row { display: flex; align-items: center; gap: 16px; }
@@ -538,7 +539,7 @@
   .me-actions .btn { flex:1 1 calc(50% - 5px); justify-content:center; }
   .tabbar {
     position: fixed; left:0; right:0; bottom:0; z-index:900;
-    background: rgba(255,253,254,0.94);
+    background: transparent;
     backdrop-filter: blur(12px);
     border-top: 1px solid var(--border);
     box-shadow: 0 -4px 20px rgba(255,143,184,0.14);
