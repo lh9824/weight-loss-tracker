@@ -1438,6 +1438,11 @@ const BG_PRESETS = [
   { key:'sakura',   name:'樱花',   value:'linear-gradient(135deg,#ffe1ec,#ffc6e0)' },
   { key:'sky',      name:'晴空',   value:'linear-gradient(135deg,#d6ebfb,#a8d8f0)' },
   { key:'lavender', name:'薰衣草', value:'linear-gradient(135deg,#e9e1fb,#c9b8f0)' },
+  { key:'baby-forest', name:'森林',     value:'img:baby/bg-forest.png' },
+  { key:'baby-star',   name:'星河',     value:'img:baby/bg-star.png' },
+  { key:'baby-garden', name:'花园',     value:'img:baby/bg-garden.png' },
+  { key:'baby-cloud',  name:'棉花糖云', value:'img:baby/bg-cloud.png' },
+  { key:'baby-choco',  name:'巧克力',   value:'img:baby/bg-choco.png' },
 ];
 
 function cssVar(n){ return getComputedStyle(document.body).getPropertyValue(n).trim(); }
@@ -1458,7 +1463,11 @@ function applySettings() {
     document.body.style.background = 'center / cover fixed no-repeat url("' + bg.slice(4) + '")';
   } else {
     const found = BG_PRESETS.find(p => p.key === bg);
-    document.body.style.background = found ? found.value : 'var(--bg)';
+    if (found && found.value.indexOf('img:') === 0) {
+      document.body.style.background = 'center / cover fixed no-repeat url("' + found.value.slice(4) + '")';
+    } else {
+      document.body.style.background = found ? found.value : 'var(--bg)';
+    }
   }
   renderAvatar();
 }
@@ -1492,9 +1501,11 @@ function renderSettingsSwatches() {
       <div class="swatch-name">默认</div>
     </div>`;
   BG_PRESETS.forEach(p => {
+    const isImg = p.value.indexOf('img:') === 0;
+    const bgStyle = isImg ? `center/cover no-repeat url('${p.value.slice(4)}')` : p.value;
     html += `
     <div>
-      <div class="swatch ${s.background===p.key?'active':''}" style="background:${p.value}" title="${p.name}" onclick="selectBg('${p.key}')">
+      <div class="swatch ${s.background===p.key?'active':''}" style="background:${bgStyle}" title="${p.name}" onclick="selectBg('${p.key}')">
         ${s.background===p.key?'<span class="tick">✓</span>':''}
       </div>
       <div class="swatch-name">${p.name}</div>
